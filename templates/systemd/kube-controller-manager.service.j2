@@ -1,0 +1,22 @@
+[Unit]
+Description=Kubernetes Controller Manager
+Documentation=https://kubernetes.io/
+After=kube-apiserver.service
+
+[Service]
+ExecStart={{ volcano_home }}/sbin/kube-controller-manager \
+    --logtostderr="false" \
+    --log-dir={{ volcano_home }}/logs/ \
+    --log-file={{ volcano_home }}/logs/kube-controller-manager.log \
+    --feature-gates=AllAlpha=false \
+    --controllers=* \
+    --leader-elect=false \
+    --master=http://{{ ansible_host }}:{{ volcano_base_port }}
+
+Restart=on-failure
+Type=notify
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
+

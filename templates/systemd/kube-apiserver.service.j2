@@ -1,0 +1,25 @@
+[Unit]
+Description=Kubernetes API Service
+Documentation=https://kubernetes.io/
+After=etcd.service
+
+[Service]
+ExecStart={{ volcano_home }}/sbin/kube-apiserver \
+	--logtostderr="false" \
+	--log-dir={{ volcano_home }}/logs/ \
+	--log-file={{ volcano_home }}/logs/kube-apiserver.log \
+	--disable-admission-plugins ServiceAccount \
+	--etcd-servers="{% for host in play_hosts %}http://{{ host }}:2379{% endfor %}" \
+	--insecure-bind-address=0.0.0.0 \
+	--insecure-port={{ volcano_base_port }} \
+    --storage-backend=etcd3 \
+    --feature-gates=AllAlpha=false \
+	--service-cluster-ip-range=10.0.0.0/24
+
+Restart=on-failure
+Type=notify
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
+

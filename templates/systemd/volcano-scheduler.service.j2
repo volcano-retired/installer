@@ -1,0 +1,19 @@
+[Unit]
+Description=Volcano Scheduler
+Documentation=https://volcano.sh
+After=kube-apiserver.service
+
+[Service]
+ExecStart={{ volcano_home }}/sbin/vc-scheduler \
+	--master http://{{ volcano_cluster_entrypoint }}:2000 \
+	--scheduler-name=default \
+	--log-dir={{ volcano_home }}/logs/ \
+	-v 3
+
+Restart=on-failure
+Type=notify
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,0 +1,15 @@
+[masters]
+192.168.3.4
+
+[workers]
+192.168.3.4
+
+[all:vars]
+volcano_home=/usr/local/volcano
+
+volcano_cluster_entrypoint=192.168.3.4
+
+volcano_base_port=2000
+etcd_peer_offset=11
+etcd_client_offset=10
+kubelet_offset=21
