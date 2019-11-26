@@ -1,0 +1,17 @@
+[Unit]
+Description=ETCD Service
+Documentation=https://github.com/coreos/etcd
+ 
+[Service]
+User=root
+Type=notify
+ExecStart={{ volcano_home }}/sbin/etcd \
+	--advertise-client-urls="http://{{ ansible_host }}:2379" \
+	--listen-client-urls="http://0.0.0.0:2379" \
+	--data-dir={{ volcano_home }}/work/etcd \
+	--debug
+
+Restart=on-failure
+ 
+[Install]
+WantedBy=multi-user.target

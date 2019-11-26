@@ -1,0 +1,33 @@
+[Unit]
+Description=Kubelet
+Documentation=https://kubernetes.io/
+After=kube-apiserver.service
+
+[Service]
+ExecStart={{ volcano_home }}/sbin/kubelet \
+	--v=3 --container-runtime=docker \
+	--logtostderr=false \
+	--log-dir={{ volcano_home }}/logs/ \
+	--log-file={{ volcano_home }}/logs/kubelet.log \
+	--kubeconfig {{ volcano_home }}/config/kubelet.config \
+	--hostname-override={{ ansible_host }} \
+	--address={{ ansible_host }} \
+	--feature-gates=AllAlpha=false \
+	--cpu-cfs-quota=true \
+	--enable-controller-attach-detach=true \
+	--cgroups-per-qos=true \
+	--cgroup-driver=cgroupfs \
+	--eviction-hard="memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%" \
+	--pod-manifest-path={{ volcano_home }}/static-pods \
+	--fail-swap-on=false \
+	--cluster-dns=10.0.0.10 \
+	--cluster-domain=cluster.local
+
+
+Restart=on-failure
+Type=notify
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
+

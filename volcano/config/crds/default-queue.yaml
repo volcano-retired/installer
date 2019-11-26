@@ -1,0 +1,9 @@
+---
+apiVersion: scheduling.sigs.dev/v1alpha2
+kind: Queue
+metadata:
+  name: default
+  annotations:
+    "helm.sh/hook": post-install
+spec:
+  weight: 1

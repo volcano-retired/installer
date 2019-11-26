@@ -1,0 +1,16 @@
+[Unit]
+Description=kube-proxy
+Documentation=https://kubernetes.io/
+After=kube-apiserver.service
+
+[Service]
+ExecStart={{ volcano_home }}/sbin/kube-proxy \
+	--master=http://{{ ansible_host }}:{{ volcano_base_port }}
+
+Restart=on-failure
+Type=notify
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
+

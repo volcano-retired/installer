@@ -1,0 +1,116 @@
+---
+- hosts: all
+  remote_user: root
+
+  tasks:
+    - name: generate configurations
+      local_action: template
+      args:
+        src: templates/volcano/config/env.conf.j2
+        dest: volcano/config/env.conf
+
+    - name: generate kube configurations
+      local_action: template
+      args:
+        src: templates/volcano/config/kube.config.j2
+        dest: volcano/config/kube.config
+
+    - name: copy binaries to all nodes
+      copy:
+        src: volcano/
+        dest: "{{ volcano_home }}"
+        mode: '0755'
+
+- hosts: masters
+  remote_user: root
+
+  tasks:
+    - name: install etcd
+      template:
+        src: templates/systemd/etcd.service.j2
+        dest: /etc/systemd/system/etcd.service
+
+    - name: start etcd
+      systemd:
+        name: etcd
+        state: started
+        daemon_reload: yes
+
+    - name: install kube-apiserver
+      template:
+        src: templates/systemd/kube-apiserver.service.j2
+        dest: /etc/systemd/system/kube-apiserver.service
+
+    - name: start kube-apiserver
+      systemd:
+        name: kube-apiserver
+        state: started
+        daemon_reload: yes
+
+    - name: register volcano crds
+      local_action: shell cat volcano/config/crds/scheduling* volcano/config/crds/batch* volcano/config/crds/bus* volcano/config/crds/default* | volcano/bin/kubectl apply --kubeconfig=volcano/config/kube.config -f -
+
+    - name: install kube-controller-manager
+      template:
+        src: templates/systemd/kube-controller-manager.service.j2
+        dest: /etc/systemd/system/kube-controller-manager.service
+
+    - name: start kube-controller-manager
+      systemd:
+        name: kube-controller-manager
+        state: started
+        daemon_reload: yes
+
+    - name: install volcano-scheduler
+      template:
+        src: templates/systemd/volcano-scheduler.service.j2
+        dest: /etc/systemd/system/volcano-scheduler.service
+
+    - name: start volcano-scheduler
+      systemd:
+        name: volcano-scheduler
+        state: started
+        daemon_reload: yes
+
+    - name: install volcano-controller-manager
+      template:
+        src: templates/systemd/volcano-controller-manager.service.j2
+        dest: /etc/systemd/system/volcano-controller-manager.service
+
+    - name: start volcano-controller-manager
+      systemd:
+        name: volcano-controller-manager
+        state: started
+        daemon_reload: yes
+
+- hosts: workers
+  remote_user: root
+
+  tasks:
+    - name: generate worker configurations
+      template:
+        src: templates/volcano/config/kube.config.j2
+        dest: "{{ volcano_home }}/config/kubelet.config"
+
+    - name: install kubelet
+      template:
+        src: templates/systemd/kubelet.service.j2
+        dest: /etc/systemd/system/kubelet.service
+
+    - name: start kubelet
+      systemd:
+        name: kubelet
+        state: started
+        daemon_reload: yes
+
+    - name: install kube-proxy
+      template:
+        src: templates/systemd/kube-proxy.service.j2
+        dest: /etc/systemd/system/kube-proxy.service
+
+    - name: start kube-proxy
+      systemd:
+        name: kube-proxy
+        state: started
+        daemon_reload: yes
+

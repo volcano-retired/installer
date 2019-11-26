@@ -1,0 +1,15 @@
+apiVersion: v1
+clusters:
+- cluster:
+    server: {{ volcano_cluster_entrypoint }}:{{ volcano_base_port }}
+  name: volcano
+contexts:
+- context:
+    cluster: volcano
+    user: ""
+  name: volcano
+current-context: volcano
+kind: Config
+preferences: {}
+users: []
+
